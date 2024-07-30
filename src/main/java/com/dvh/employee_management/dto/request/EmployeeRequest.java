@@ -16,6 +16,6 @@ public class EmployeeRequest {
     private String empName;
     @NotBlank(message = Constants.ErrorMessageEmployeeValidation.POSITON_NOT_BLANK)
     private String position;
-    @NotBlank(message = Constants.ErrorMessageEmployeeValidation.EMP_NO_NOT_BLANK)
     private String password;
+    private String photoUrl;
 }

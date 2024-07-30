@@ -59,7 +59,7 @@ public class WebSecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable);
         http
                 .authorizeHttpRequests((authz) -> authz
-                        .requestMatchers("/api/login").permitAll()
+                        .requestMatchers("/api/login","/api/files/**").permitAll()
                         .requestMatchers("/api/employees/**").hasRole("USER")
                         .anyRequest().authenticated()
                 ).addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);

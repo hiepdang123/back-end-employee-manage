@@ -7,9 +7,10 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class EmployeeDto {
-    private String empNo;
-    private String empName;
-    private String position;
-    private String photoUrl;
+public class ProductDto {
+    private int id;
+    private String name;
+    private double price;
+    private int amount;
+    private String imgUrl;
 }

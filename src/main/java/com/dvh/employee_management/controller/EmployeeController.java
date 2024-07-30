@@ -4,6 +4,7 @@ import com.dvh.employee_management.dto.entity.EmployeeDto;
 import com.dvh.employee_management.dto.request.EmployeeRequest;
 import com.dvh.employee_management.dto.response.BaseResponse;
 import com.dvh.employee_management.service.EmployeeService;
+import com.dvh.employee_management.service.FileStorageService;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -67,12 +68,5 @@ public class EmployeeController {
 
         employeeService.deleteEmployee(empNo);
         return BaseResponse.successData("Xóa thành công employee có empNo là: "+empNo);
-    }
-
-    @PostMapping("{empNo}")
-    @PreAuthorize("hasAnyAuthority('USER')")
-    public ResponseEntity<?> uploadImage(@PathVariable("empNo") String empNo, @RequestParam("file")MultipartFile file){
-        employeeService.uploadImage(empNo,file);
-        return BaseResponse.successData("Thêm ảnh thành công");
     }
 }

@@ -18,6 +18,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Controller;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -72,7 +73,9 @@ public class EmployeeServiceImp implements EmployeeService {
         if(!employeeOptional.isPresent()){
             throw new EmployeeException(Constants.ErrorMessageEmployeeValidation.NOT_FIND_EMPLOYEE_BY_EMPNO+emp.getEmpNo());
         }
+        String password=employeeOptional.get().getPassword();
         Employee employee=modelMapper.map(emp,Employee.class);
+        employee.setPassword(password);
         return modelMapper.map(employeeRepository.save(employee),EmployeeDto.class);
     }
 

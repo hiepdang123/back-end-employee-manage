@@ -58,6 +58,14 @@ public class GlobalHandleException {
         return BaseResponse.error(3,e.getMessage());
     }
 
+    @ExceptionHandler(ProductException.class)
+    @ResponseBody
+    @ResponseStatus(HttpStatus.OK)
+    public BaseResponse handleProductException(ProductException e){
+        log.error("Exception: {}",e);
+        return BaseResponse.error(3,e.getMessage());
+    }
+
     @ExceptionHandler(FileException.class)
     @ResponseBody
     @ResponseStatus(HttpStatus.OK)
@@ -69,7 +77,7 @@ public class GlobalHandleException {
     @ExceptionHandler(DataNotFoundException.class)
     @ResponseBody
     @ResponseStatus(HttpStatus.OK)
-    public BaseResponse handleFileException(DataNotFoundException e){
+    public BaseResponse handleDataNotFoundException(DataNotFoundException e){
         log.error("Exception: {}",e);
         return BaseResponse.error(4,e.getMessage());
     }

@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.Date;
 import java.util.List;
 
 @Entity(name = "orders")
@@ -15,10 +16,10 @@ import java.util.List;
 @Builder
 public class Order {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private String id;
     @Column(name = "order_date",nullable = false)
-    private String orderDate;
+    private Date orderDate;
     @ManyToOne
     @JoinColumn(name = "id_customer")
     private Employee customer;

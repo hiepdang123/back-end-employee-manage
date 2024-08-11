@@ -57,28 +57,28 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         filterChain.doFilter(request, response);
     }
 
-    private String getJwtFromRequest(HttpServletRequest request) {
-        String bearerToken = request.getHeader("Authorization");
-        // Kiểm tra xem header Authorization có chứa thông tin jwt không
-        if (StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer ")) {
-            return bearerToken.substring(7);
-        }
-        return null;
-    }
-
 //    private String getJwtFromRequest(HttpServletRequest request) {
-//        Cookie[] cookies = request.getCookies();
-//        if (cookies != null) {
-//            return Arrays.stream(request.getCookies())
-//                    .filter(c -> {
-//                        return c.getName().equals("token");
-//                    })
-//                    .findFirst()
-//                    .map(Cookie::getValue)
-//                    .orElse(null);
+//        String bearerToken = request.getHeader("Authorization");
+//        // Kiểm tra xem header Authorization có chứa thông tin jwt không
+//        if (StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer ")) {
+//            return bearerToken.substring(7);
 //        }
 //        return null;
 //    }
+
+    private String getJwtFromRequest(HttpServletRequest request) {
+        Cookie[] cookies = request.getCookies();
+        if (cookies != null) {
+            return Arrays.stream(request.getCookies())
+                    .filter(c -> {
+                        return c.getName().equals("token");
+                    })
+                    .findFirst()
+                    .map(Cookie::getValue)
+                    .orElse(null);
+        }
+        return null;
+    }
 }
 
 

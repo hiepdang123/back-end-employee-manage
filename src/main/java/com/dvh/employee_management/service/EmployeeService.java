@@ -3,6 +3,8 @@ package com.dvh.employee_management.service;
 import com.dvh.employee_management.dto.entity.EmployeeDto;
 import com.dvh.employee_management.dto.request.EmployeeRequest;
 import com.dvh.employee_management.dto.request.LoginRequest;
+import com.dvh.employee_management.dto.request.RefreshTokenRequest;
+import com.dvh.employee_management.dto.response.TokenResponse;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -21,5 +23,6 @@ public interface EmployeeService {
 
     void uploadImage(String empNo,MultipartFile file);
 
-    String login(LoginRequest request);
+    TokenResponse refreshToken(String refreshToken);
+    TokenResponse login(LoginRequest request);
 }

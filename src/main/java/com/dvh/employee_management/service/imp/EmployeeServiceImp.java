@@ -4,7 +4,11 @@ import com.dvh.employee_management.constant.Constants;
 import com.dvh.employee_management.dto.entity.EmployeeDto;
 import com.dvh.employee_management.dto.request.EmployeeRequest;
 import com.dvh.employee_management.dto.request.LoginRequest;
+import com.dvh.employee_management.dto.request.RefreshTokenRequest;
+import com.dvh.employee_management.dto.response.TokenResponse;
+import com.dvh.employee_management.exception.DataNotFoundException;
 import com.dvh.employee_management.exception.EmployeeException;
+import com.dvh.employee_management.exception.TokenException;
 import com.dvh.employee_management.model.Employee;
 import com.dvh.employee_management.repository.EmployeeRepository;
 import com.dvh.employee_management.service.EmployeeService;
@@ -48,77 +52,103 @@ public class EmployeeServiceImp implements EmployeeService {
 
     @Override
     public EmployeeDto getEmployee(String empNo) {
-        Optional<Employee> employeeOptional=employeeRepository.findById(empNo);
-        if(!employeeOptional.isPresent()){
-            throw new EmployeeException(Constants.ErrorMessageEmployeeValidation.NOT_FIND_EMPLOYEE_BY_EMPNO+empNo);
+        Optional<Employee> employeeOptional = employeeRepository.findById(empNo);
+        if (!employeeOptional.isPresent()) {
+            throw new EmployeeException(Constants.ErrorMessageEmployeeValidation.NOT_FIND_EMPLOYEE_BY_EMPNO + empNo);
         }
-        EmployeeDto employeeDto=modelMapper.map(employeeOptional.get(),EmployeeDto.class);
+        EmployeeDto employeeDto = modelMapper.map(employeeOptional.get(), EmployeeDto.class);
         return employeeDto;
     }
 
     @Override
     public EmployeeDto addEmployee(EmployeeRequest emp) {
-        Optional<Employee> employeeOptional=employeeRepository.findById(emp.getEmpNo());
-        if(employeeOptional.isPresent()){
-            throw new EmployeeException(Constants.ErrorMessageEmployeeValidation.EXIST_EMPLOYEE+emp.getEmpNo());
+        Optional<Employee> employeeOptional = employeeRepository.findById(emp.getEmpNo());
+        if (employeeOptional.isPresent()) {
+            throw new EmployeeException(Constants.ErrorMessageEmployeeValidation.EXIST_EMPLOYEE + emp.getEmpNo());
         }
-        Employee employee=modelMapper.map(emp,Employee.class);
+        Employee employee = modelMapper.map(emp, Employee.class);
         employee.setPassword(passwordEncoder.encode(emp.getPassword()));
-        return modelMapper.map(employeeRepository.save(employee),EmployeeDto.class);
+        return modelMapper.map(employeeRepository.save(employee), EmployeeDto.class);
     }
 
     @Override
     public EmployeeDto updateEmployee(EmployeeRequest emp) {
-        Optional<Employee> employeeOptional=employeeRepository.findById(emp.getEmpNo());
-        if(!employeeOptional.isPresent()){
-            throw new EmployeeException(Constants.ErrorMessageEmployeeValidation.NOT_FIND_EMPLOYEE_BY_EMPNO+emp.getEmpNo());
+        Optional<Employee> employeeOptional = employeeRepository.findById(emp.getEmpNo());
+        if (!employeeOptional.isPresent()) {
+            throw new EmployeeException(Constants.ErrorMessageEmployeeValidation.NOT_FIND_EMPLOYEE_BY_EMPNO + emp.getEmpNo());
         }
-        String password=employeeOptional.get().getPassword();
-        Employee employee=modelMapper.map(emp,Employee.class);
+        String password = employeeOptional.get().getPassword();
+        Employee employee = modelMapper.map(emp, Employee.class);
         employee.setPassword(password);
-        return modelMapper.map(employeeRepository.save(employee),EmployeeDto.class);
+        return modelMapper.map(employeeRepository.save(employee), EmployeeDto.class);
     }
 
     @Override
     public void deleteEmployee(String empNo) {
-        Optional<Employee> employeeOptional=employeeRepository.findById(empNo);
-        if(!employeeOptional.isPresent()){
-            throw new EmployeeException(Constants.ErrorMessageEmployeeValidation.NOT_FIND_EMPLOYEE_BY_EMPNO+empNo);
+        Optional<Employee> employeeOptional = employeeRepository.findById(empNo);
+        if (!employeeOptional.isPresent()) {
+            throw new EmployeeException(Constants.ErrorMessageEmployeeValidation.NOT_FIND_EMPLOYEE_BY_EMPNO + empNo);
         }
         employeeRepository.deleteById(empNo);
     }
 
     @Override
     public List<EmployeeDto> getAllEmployees() {
-        List<Employee> list=employeeRepository.findAll();
-        List<EmployeeDto> dtoList=new ArrayList<>();
-        for (Employee employee:list){
-            EmployeeDto dto=modelMapper.map(employee,EmployeeDto.class);
+        List<Employee> list = employeeRepository.findAll();
+        List<EmployeeDto> dtoList = new ArrayList<>();
+        for (Employee employee : list) {
+            EmployeeDto dto = modelMapper.map(employee, EmployeeDto.class);
             dtoList.add(dto);
         }
         return dtoList;
     }
 
     @Override
-    public void uploadImage(String empNo,MultipartFile file) {
+    public void uploadImage(String empNo, MultipartFile file) {
         try {
-            Optional<Employee> employeeOptional=employeeRepository.findById(empNo);
-            if(!employeeOptional.isPresent()){
-                throw new EmployeeException(Constants.ErrorMessageEmployeeValidation.NOT_FIND_EMPLOYEE_BY_EMPNO+empNo);
+            Optional<Employee> employeeOptional = employeeRepository.findById(empNo);
+            if (!employeeOptional.isPresent()) {
+                throw new EmployeeException(Constants.ErrorMessageEmployeeValidation.NOT_FIND_EMPLOYEE_BY_EMPNO + empNo);
             }
-            Employee employee=employeeOptional.get();
-            String filename=fileStorageService.storeFile(file);
+            Employee employee = employeeOptional.get();
+            String filename = fileStorageService.storeFile(file);
             employee.setPhotoUrl(filename);
             employeeRepository.save(employee);
-        }catch (Exception e){
+        } catch (Exception e) {
             throw new EmployeeException("Thêm ảnh thất bại");
         }
     }
 
     @Override
-    public String login(LoginRequest request) {
-        Authentication authentication =authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(request.getEmpNo(), request.getPassword()));
+    public TokenResponse login(LoginRequest request) {
+        Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(request.getEmpNo(), request.getPassword()));
         SecurityContextHolder.getContext().setAuthentication(authentication);
-        return jwtTokenProvider.generateToken(new CustomUserDetails(modelMapper.map(request,Employee.class)));
+        String accessToken = jwtTokenProvider.generateAccessToken(new CustomUserDetails(modelMapper.map(request, Employee.class)));
+        String refreshToken = jwtTokenProvider.generateRefreshToken(new CustomUserDetails(modelMapper.map(request, Employee.class)));
+        return TokenResponse.builder()
+                .accessToken(accessToken)
+                .refreshToken(refreshToken)
+                .build();
+    }
+
+    @Override
+    public TokenResponse refreshToken(String refreshToken) {
+        try {
+            String empNo=jwtTokenProvider.getEmpNoFromJWT(refreshToken);
+            Optional<Employee> employeeOptional=employeeRepository.findById(empNo);
+            if (!employeeOptional.isPresent()){
+                throw new DataNotFoundException(Constants.ErrorMessageEmployeeValidation.NOT_FIND_EMPLOYEE_BY_EMPNO+empNo);
+            }
+            Employee employee=employeeOptional.get();
+
+        String accessToken=jwtTokenProvider.generateAccessToken(new CustomUserDetails(modelMapper.map(employee,Employee.class)));
+        String newRefreshToken=jwtTokenProvider.generateRefreshToken(new CustomUserDetails(modelMapper.map(employee,Employee.class)));
+            return TokenResponse.builder()
+                    .accessToken(accessToken)
+                    .refreshToken(newRefreshToken)
+                    .build();
+        } catch (Exception e) {
+            throw new TokenException("Error token");
+        }
     }
 }

@@ -19,8 +19,8 @@ public class OrderItem {
     private String name;
     @Column(name = "price",nullable = false)
     private double price;
-    @Column(name = "amount",nullable = false)
-    private int amount;
+    @Column(name = "quantity",nullable = false)
+    private int quantity;
     @ManyToOne
     @JoinColumn(name = "id_order")
     private Order order;

@@ -20,15 +20,27 @@ public class JwtTokenProvider {
     private String JWT_SECRET;
 
     // Thời gian có hiệu lực của chuỗi jwt
-    private final long JWT_EXPIRATION = 24 * 60 * 60 * 1000;
+    private final long JWT_EXPIRATION = 60 * 1000;
+    private final long JWT_REFRESH_EXPIRATION = 24 * 60 * 60 * 1000;
 
     // Tạo ra jwt từ thông tin user
-    public String generateToken(CustomUserDetails userDetails) {
+    public String generateAccessToken(CustomUserDetails userDetails) {
         SecretKey key = Keys.hmacShaKeyFor(Decoders.BASE64.decode(JWT_SECRET));
         return Jwts.builder()
                 .subject(userDetails.getUsername())
                 .issuedAt(new Date())
                 .expiration(new Date(System.currentTimeMillis() + JWT_EXPIRATION))
+                .signWith(key)
+                .id(UUID.randomUUID().toString())
+                .compact();
+    }
+
+    public String generateRefreshToken(CustomUserDetails userDetails) {
+        SecretKey key = Keys.hmacShaKeyFor(Decoders.BASE64.decode(JWT_SECRET));
+        return Jwts.builder()
+                .subject(userDetails.getUsername())
+                .issuedAt(new Date())
+                .expiration(new Date(System.currentTimeMillis() + JWT_REFRESH_EXPIRATION))
                 .signWith(key)
                 .id(UUID.randomUUID().toString())
                 .compact();
